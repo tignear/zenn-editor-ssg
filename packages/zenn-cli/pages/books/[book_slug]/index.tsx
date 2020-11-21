@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import Head from "next/head";
-import { NextPage, GetServerSideProps } from "next";
-import escapeHtml from "escape-html";
+import { NextPage, GetStaticProps, GetStaticPaths } from "next";
+import { promises as fs } from "fs";
+import { join } from "path";
 
 import { BookHeader } from "@components/BookHeader";
 import { MainContainer } from "@components/MainContainer";
@@ -88,26 +89,14 @@ const Page: NextPage<Props> = (props) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({
-  res,
-  params,
-}) => {
+export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
   const slug = params.book_slug as string;
   const book = getBookBySlug(slug);
 
   if (!book) {
-    if (res) {
-      res.setHeader("content-type", "text/html; charset=utf-8");
-      res.statusCode = 404;
-      res.end(
-        `本の設定ファイル（books/${escapeHtml(
-          slug
-        )}/config.yaml）の内容が取得できませんでした`
-      );
-      return {
-        props: {} as any,
-      };
-    }
+    throw new Error(
+      `本の設定ファイル（books/${slug}/config.yaml）の内容が取得できませんでした`
+    );
   }
 
   const chapters = getChapters(slug, book.chapters);
@@ -122,8 +111,25 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
       },
       chapters,
       allContentsNavCollection,
-    },
+    } as any,
   };
 };
-
+export const getStaticPaths: GetStaticPaths = async () => {
+  const paths: { params: { book_slug: string; } }[] = [];
+  for (const dir of await fs.readdir(join("books/"))) {
+    const stat = await fs.stat(join("books/", dir));
+    if (!stat.isDirectory()) {
+      continue;
+    }
+    paths.push({
+      params: {
+        book_slug: dir,
+      },
+    });
+  }
+  return {
+    fallback: false,
+    paths: paths,
+  };
+};
 export default Page;

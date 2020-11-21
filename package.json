@@ -23,5 +23,8 @@
   "homepage": "https://github.com/zenn-dev/zenn-editor#readme",
   "publishConfig": {
     "access": "public"
+  },
+  "resolutions": {
+    "node-sass":"5.0.0"
   }
 }

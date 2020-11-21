@@ -1,4 +1,4 @@
-import { NextPage, GetServerSideProps } from "next";
+import { NextPage, GetStaticProps } from "next";
 import Head from "next/head";
 import { MainContainer } from "@components/MainContainer";
 import { ContentWrapper } from "@components/ContentWrapper";
@@ -91,7 +91,7 @@ const Page: NextPage<Props> = (props) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<Props> = async () => {
+export const getStaticProps: GetStaticProps<Props> = async () => {
   const allContentsNavCollections = getAllContentsNavCollections();
   return {
     props: { allContentsNavCollections },
